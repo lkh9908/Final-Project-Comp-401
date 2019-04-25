@@ -18,6 +18,10 @@ public interface Chef {
 	double getBalance();
 	
 	boolean alreadyPlacedThisRotation();
+	
+	double getWeightConsumed();
+	
+	double getWeightSpoiled();
 
 }
 

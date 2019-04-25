@@ -6,6 +6,7 @@ import java.util.List;
 import comp401sushi.Plate;
 import comp401sushi.RedPlate;
 import comp401sushi.Sushi;
+import comp401sushi.IngredientPortion;
 import comp401sushi.Nigiri.NigiriType;
 import comp401sushi.Plate.Color;
 import comp401sushi.Sashimi.SashimiType;
@@ -17,7 +18,9 @@ public class ChefImpl implements Chef, BeltObserver {
 	private String name;
 	private ChefsBelt belt;
 	private boolean already_placed_this_rotation;
-	
+	private double weight_food_consumed;
+	private double weight_food_spoiled;
+
 	public ChefImpl(String name, double starting_balance, ChefsBelt belt) {
 		this.name = name;
 		this.balance = starting_balance;
@@ -25,13 +28,15 @@ public class ChefImpl implements Chef, BeltObserver {
 		belt.registerBeltObserver(this);
 		already_placed_this_rotation = false;
 		plate_history = new ArrayList<HistoricalPlate>();
+		weight_food_consumed = 0;
+		weight_food_spoiled = 0;
 	}
 
 	@Override
 	public String getName() {
 		return name;
 	}
-	
+
 	@Override
 	public void setName(String n) {
 		this.name = n;
@@ -66,7 +71,7 @@ public class ChefImpl implements Chef, BeltObserver {
 		if (already_placed_this_rotation) {
 			throw new AlreadyPlacedThisRotationException();
 		}
-		
+
 		if (plate.getContents().getCost() > balance) {
 			throw new InsufficientBalanceException();
 		}
@@ -83,17 +88,41 @@ public class ChefImpl implements Chef, BeltObserver {
 				balance += plate.getPrice();
 				Customer consumer = belt.getCustomerAtPosition(((PlateEvent) e).getPosition());
 				plate_history.add(new HistoricalPlateImpl(plate, consumer));
+
+				// record weight of the food on the consumed plate
+				IngredientPortion[] ing = plate.getContents().getIngredients().clone();
+				for (int i = 0; i < ing.length; i++) {
+					weight_food_consumed += ing[i].getAmount();
+				}
 			}
 		} else if (e.getType() == BeltEvent.EventType.PLATE_SPOILED) {
 			Plate plate = ((PlateEvent) e).getPlate();
+			// record weight of the food on the spoiled plate
+			if (plate.getChef() == this) {
+				IngredientPortion[] ing = plate.getContents().getIngredients().clone();
+				for (int i = 0; i < ing.length; i++) {
+					weight_food_spoiled += ing[i].getAmount();
+				}	
+			}
+			
 			plate_history.add(new HistoricalPlateImpl(plate, null));
 		} else if (e.getType() == BeltEvent.EventType.ROTATE) {
 			already_placed_this_rotation = false;
 		}
 	}
-	
+
 	@Override
 	public boolean alreadyPlacedThisRotation() {
 		return already_placed_this_rotation;
+	}
+
+	@Override
+	public double getWeightConsumed() {
+		return weight_food_consumed;
+	}
+
+	@Override
+	public double getWeightSpoiled() {
+		return weight_food_spoiled;
 	}
 }
