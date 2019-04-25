@@ -48,6 +48,7 @@ public class PlayerChefView extends JPanel implements ActionListener {
 		JButton sushi_button = new JButton("Make a new plate of sushi");
 		sushi_button.setActionCommand("sushi");
 		sushi_button.addActionListener(this);
+		add(sushi_button);
 
 		kmp_roll = new Roll("KMP Roll", new IngredientPortion[] {new EelPortion(1.0), new AvocadoPortion(0.5), new SeaweedPortion(0.2)});
 		crab_sashimi = new Sashimi(Sashimi.SashimiType.CRAB);
