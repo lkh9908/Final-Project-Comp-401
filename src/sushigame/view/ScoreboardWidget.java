@@ -42,6 +42,7 @@ public class ScoreboardWidget extends JPanel implements BeltObserver, ActionList
 
 		// default: sort by balance
 		which_sort_option = 0;
+		refresh();
 	}
 
 	private String makeScoreboardHTML() {

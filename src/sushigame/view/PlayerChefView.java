@@ -11,6 +11,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
 
 import comp401sushi.AvocadoPortion;
 import comp401sushi.CrabPortion;
@@ -90,7 +92,7 @@ public class PlayerChefView extends JPanel implements ActionListener {
 			int spotInt = 0;
 			String color = "";
 			Sushi sushi = null;
-			int fOt = 0;
+			double gold_price = 0;
 
 			// ask for position
 			String spot = JOptionPane.showInputDialog("Near what position do you "
@@ -117,12 +119,28 @@ public class PlayerChefView extends JPanel implements ActionListener {
 				break;
 			case 3:
 				color = "gold";
-				String[] fiveOrTen = {"5", "10"};
-				fOt = JOptionPane.showOptionDialog(null, "For gold plate, choose between"
-						+ " 5 and 10 dollars for price.", 
-						"Select an option", 
-						JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, 
-						null, fiveOrTen, fiveOrTen[0]); 
+				int confirm_gold = 0;
+				boolean valid = false;
+
+				// choose price for gold plate
+				while (valid == false) {
+					String gold_price_st = JOptionPane.showInputDialog("Choose a price for your gold plate "
+							+ "(can be between 5 and 10 dollars)");
+					
+					double temp = Double.parseDouble(gold_price_st);
+					gold_price_st = String.format("%.2f", temp);
+					temp = Double.parseDouble(gold_price_st);
+					if (temp < 5 || temp > 10) {
+						JOptionPane.showMessageDialog(null, "Invalid price");
+					} else {
+						confirm_gold = JOptionPane.showConfirmDialog(null, "Your price is: " + temp);
+						if (confirm_gold != 1 && confirm_gold != 2) {
+							gold_price = temp;
+							valid = true;
+						}
+					}
+				}
+				
 				break;
 			}
 
@@ -157,7 +175,7 @@ public class PlayerChefView extends JPanel implements ActionListener {
 					break;
 				}
 			} else if (res_sushi == 1) {
-			// nigiri
+				// nigiri
 				int res_nigiri = 0;
 				String[] options_nigiri = {"tuna", "yellowtail", "eel", "crab", "shrimp"};
 				res_nigiri = JOptionPane.showOptionDialog(null, "Which kind of sashimi?", "Select an option", 
@@ -181,17 +199,17 @@ public class PlayerChefView extends JPanel implements ActionListener {
 					break;
 				}
 			} else if (res_sushi == 2) {
-			// roll
+				// roll
 				String roll_name = JOptionPane.showInputDialog(
 						"(Optional)What is the name of your roll?");
-				
+
 				// Name = "random roll" if no input
 				if (roll_name.equals("")) {
 					roll_name = "Random Roll";
 				}
-				
+
 				int res_roll = 0;
-				
+
 				double[] portionsList = new double[8];
 				int confirm = 0;
 				boolean flag = false;
@@ -202,7 +220,7 @@ public class PlayerChefView extends JPanel implements ActionListener {
 						JOptionPane.showMessageDialog(null, "Cannot create a roll with no ingredient");
 						confirm = 0;
 					}
-					
+
 					if (confirm == 1 || confirm == 2) {
 						break;
 					}
@@ -213,11 +231,11 @@ public class PlayerChefView extends JPanel implements ActionListener {
 							JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, 
 							null, options_roll, options_roll[0]);
 					IngredientPortion temp = null;
-					
+
 					String ingre_qty = JOptionPane.showInputDialog(
 							"How much (oz.) would you like for this ingredient?");
 					double qtyDouble = Double.parseDouble(ingre_qty);
-					
+
 					if (qtyDouble > 1.5) {
 						JOptionPane.showMessageDialog(null, "Quantity cannot be more than 1.5oz.");
 					} else if (portionsList[res_roll] + qtyDouble > 1.5){
@@ -227,7 +245,7 @@ public class PlayerChefView extends JPanel implements ActionListener {
 						flag = true;
 					}
 				}
-				
+
 				// initialize array of ingredients for roll object
 				int leng = 0;
 				for(int i = 0; i < portionsList.length; i++) {
@@ -235,9 +253,9 @@ public class PlayerChefView extends JPanel implements ActionListener {
 						leng++;
 					}
 				}
-				
+
 				ArrayList <IngredientPortion> ingredientList = new ArrayList();
-				
+
 				IngredientPortion temp = null;
 				if (portionsList[0] != 0) {
 					temp = new AvocadoPortion(portionsList[0]);
@@ -271,15 +289,15 @@ public class PlayerChefView extends JPanel implements ActionListener {
 					temp = new YellowtailPortion(portionsList[7]);
 					ingredientList.add(temp);
 				}
-				
-				
+
+
 				IngredientPortion[] roll_result_list = new IngredientPortion[leng];
 				int result_list_index = 0;
 				for(IngredientPortion x: ingredientList) {
 					roll_result_list[result_list_index] = x;
 					result_list_index++;
 				}
-				
+
 				Roll roll_result = new Roll(roll_name, roll_result_list);
 				sushi = roll_result;
 			}
@@ -291,11 +309,7 @@ public class PlayerChefView extends JPanel implements ActionListener {
 			} else if (color.equals("blue")) {
 				makeBluePlateRequest(sushi, spotInt);
 			} else if (color.equals("gold")) {
-				if (fOt == 0) {
-					makeGoldPlateRequest(sushi, spotInt, 5);
-				} else if (fOt == 1) {
-					makeGoldPlateRequest(sushi, spotInt, 10);
-				}
+				makeGoldPlateRequest(sushi, spotInt, gold_price);
 			}
 		}
 
